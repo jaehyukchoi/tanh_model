@@ -1,0 +1,173 @@
+\documentclass[authoryear,reqno,12pt,a4paper]{elsarticle}  
+%\documentclass[a4paper,12pt,reqno]{amsart}
+%\pdfoutput=1
+
+\usepackage{amsmath,natbib,graphicx,hyperref,soul}
+\usepackage[left=1in,right=1in,top=1.4in,bottom=1.2in]{geometry}
+\renewcommand{\baselinestretch}{1.5}
+
+\hypersetup{
+	pdftitle={Black-Scholes and Normal Hybrid Stochastic Volatility Model},
+	pdfauthor={Jaehyuk Choi and Gong Li},%pdfsubject={Subject??},
+	pdfkeywords={Black-Scholes, Bachelier, Normal model},
+	colorlinks=true,
+	linkcolor=red,
+	citecolor=blue,
+	urlcolor=blue,
+	bookmarksnumbered=true,%Show chapter/section number in PDF thumbnails
+	pdfstartview=%Acrobat reader's default zoom setting (vs Fit)
+}
+
+\newcommand{\rhoc}{\rho_\ast}
+\newcommand{\vov}{\alpha}
+\newcommand{\norm}{\textsc{n}}
+\newcommand{\bs}{\textsc{bs}}
+\newcommand{\cev}{\textsc{cev}}
+\newcommand{\ncx}{\textsc{ncx2}}
+\newcommand{\AV}{\textsc{av}}
+
+\newcommand{\qtext}[2][\quad]{#1\text{#2}#1}
+\newcommand{\todo}[1]{\hl{[\,#1\,]}}
+\newcommand{\citewiki}[1]{(\href{https://en.wikipedia.org/wiki/#1}{\textmd{\textsc{WikipediA}}})}
+
+\journal{PHBS Working Paper}  %European Journal of Operational Research
+\bibliographystyle{elsarticle-harv}%\biboptions{authoryear}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{Black-Scholes and Normal Hybrid Stochastic Volatility Model}
+
+\author[phbs]{Jaehyuk Choi\corref{corrauthor}}
+\ead{jaehyuk@phbs.pku.edu.cn}
+
+\author[phbs]{Gong Li}
+\ead{1801212845@pku.edu.cn}
+
+\address[phbs]{Peking University HSBC Business School, Shenzhen, China}
+
+\cortext[corrauthor]{Corresponding author \textit{Tel:} +86-755-2603-0568, \textit{Address:} Rm 755, Peking University HSBC Business School, University Town, Nanshan, Shenzhen 518055, China}
+
+\date{Nov 26, 2019}
+
+\begin{abstract}
+We propose an option pricing model where the dynamics of asset price gradually changes from normal model to Black-Scholes model as the asset price increases.
+\end{abstract}
+
+\begin{keyword}
+	stochastic volatility, Black-Scholes model, Bachelier model, SABR model
+\end{keyword}
+\end{frontmatter}
+
+%\linenumbers
+
+\section{Introduction}
+The dynamics of asset price under the Black-Scholes model is given by the geometric Brownian Motion,
+$$ dF_t = \sigma F_t\, dW_t. $$  
+and that under the Bachelier (normal) model is given by
+$$ dF_t = \sigma_\norm\, dW_t. $$  
+
+Interest rate is known to follow the BSM model when the rate $F_t$ is well below $h$ and the normal model when $F_t$ is well above $h$ for some reference rate $h$. Therefore, we want to construct a hybrid model.
+
+Assume
+$$ dF_t = \sigma C(F_t) dW_t. $$  
+The local volatility function $C(x)$ should satisfy the following properties:
+\begin{itemize}
+	\item $C(x)\approx x$ when $x$ is small. Therefore, $\sigma$ plays the role of the BSM volatility when $x$ is small.
+	\item $C(x)\rightarrow h$ when $x$ is large. The parameter $h$ is understood as a scale of $F_t$. Therefore, $\sigma_N = h \sigma$ plays the role of the normal volatility when $x$ is large.
+\end{itemize}
+
+\section{Previously known methods}
+When $C(x)=x^\beta$, the model is known as the constant elasticity of variance (CEV) model:
+$$ \frac{d F_t}{F_t^\beta} = \sigma dW_t. $$
+It is well known that the option price is given as
+$$ C_\beta(K,F_0,\sigma) = F_0 \, Q_\ncx\left(\frac{q^2(K)}{\sigma^2 T}; \,2+\frac1{1-\beta},\frac{q^2(F_0)}{\sigma^2 T}\right) - K \, P_\ncx\left(\frac{q^2(F_0)}{\sigma^2 T};\, \frac1{1-\beta},\frac{q^2(K)}{\sigma^2 T}\right),
+$$
+where $q(x) = x^{1-\beta}/(1-\beta)$, and $P_\ncx(x;k, x_0)$ and $Q_\ncx(x;k,x_0)$ are the cumulative probability density (CDF) and survival functions, respectively, of the noncentral chi-squared distribution with degree of freedom $k$ and noncentrality parameter $x_0$.
+
+\citet{hagan1999equiv} derived the approximate equivalent BSM volatility for general $C(x)$. The solution is somewhat accurate near-the-money options.
+
+
+\section{Ideas}
+\subsection{Candidate 1}
+For our first candidate, we consider 
+$$C(x) = \frac{hx}{h+x}.$$ 
+This function satisfies the requirements.
+Ito's lemma leads to
+\begin{gather*}
+\left(\frac1{F_t}+\frac{1}{h}\right) dF_t = \sigma dW_t \\
+d (\log F_t + F_t/h) = \sigma dW_t - \frac{\sigma^2 h^2}{2(F_t+h)^2}dt
+\end{gather*}
+The integral in the left hand side is related to the Lambert W function $W(z)$  \citewiki{Lambert_W_function} defined by 
+$$ z = W(z\,e^z) \qtext{or}  W^{-1}(z) = z\,e^{z}. $$
+When $z$ is small, $W(z)\approx z$ and, when $z$ is large, $W(z)=\log z$.
+
+To simplify the calculation, we assume that $F_t$ is not far way from the initial point $F_0$. 
+$$ d (\log F_t + F_t/h) = \sigma dW_t - \frac{\sigma^2 h^2}{2(F_0+h)^2}dt
+$$
+Then,
+$$ F_T e^{F_T/h} = F_0 e^{F_0/h} \exp\left(\sigma W_T - \frac{\sigma^2 h^2T}{2(F_0+h)^2} \right)
+$$
+
+$$ F_T = h W\left( (F_0/h) e^{F_0/h} \exp\left( \sigma W_T - \frac{\sigma^2 h^2 T}{2(F_0+h)^2} \right)\right)
+$$
+When $F_0 \ll h$, the dynamics follows the BSM model ($W(z)\approx z$):
+$$ F_T = F_0 \exp\left( \sigma W_T - \frac{\sigma^2 T}{2} \right).
+$$
+When $F_0 \gg h$, the dynamics follows the normal model ($W(z)\approx \log z$):
+$$ F_T = F_0 + \sigma W_T.
+$$
+
+Can we price the option quickly?
+$$C(K) = E\left( (F_T-K)^+\right)
+$$
+
+
+
+\subsection{Candidate 2}
+We consider 
+$$ C(x) = h\tanh(x/h)$$
+which also satisfies the requirements.
+
+Using
+$$ \int \frac{dx}{h\tanh(x/h)} = \int \frac{\cosh(x/h)}{h\sinh(x/h)} dx = \log(\sinh(x/h)) + \text{const.},
+$$
+we obtain:
+\begin{gather*}
+\frac{\cosh(F_t/h)}{h\sinh(F_t/h)} dF_t = \sigma dW_t \\
+d \log(\sinh(F_t/h)) = \sigma dW_t + \frac{\sigma^2}{2} (\tanh^2(F_t/h)-1) dt.
+\end{gather*}
+\todo{Check the computation.}
+
+Again, assuming that $F_t\approx F_0$,
+\begin{gather*}
+\sinh(F_T/h) = \sinh(F_0/h) \exp \left(
+\sigma W_T + \frac{\sigma^2 T}{2} (\tanh^2(F_0/h)-1)
+\right) \\
+F_T = h \sinh^{-1} \left( \sinh(F_0/h) \exp \left(\sigma W_T + \frac{\sigma^2 T}{2} (\tanh^2(F_0/h)-1)
+\right) \right) \\
+\end{gather*}
+
+We find the similar asymptotic behavior in this candidate too. Reminded that $\sinh^{-1} z = \log(z+\sqrt{1+z^2})$. Therefore, $\sinh z \approx z$ when $z\ll 1$, $\sinh z \approx \log(2z)$ when $z\gg 1$.
+When $F_0 \ll h$, the dynamics follows the BSM model:
+$$ F_T = F_0 \exp\left( \sigma W_T - \frac{\sigma^2 T}{2} \right).
+$$
+When $F_0 \gg h$, the dynamics follows the normal model:
+$$ F_T = F_0 + \sigma W_T.
+$$
+
+\section{Research questions}
+\begin{itemize}
+	\item How do we price the option? Any approximation?
+	\item How can we run Monte-Carlo simulation efficiently? (It will be the subject of the \textit{Applied Stochastic Processes} course.)
+\end{itemize}
+
+\section{Extension}
+Eventually, I want to solve the stochastic volatility model with the local volatility function $C(x)$:
+$$ dF_t = \sigma_t C(F_t) dW_t,\quad \sigma_t = \vov \sigma_t dZ_t, \qtext{and} dW_t dZ_t = \rho\, dt. $$ 
+When $C(x)=x^\beta$, the model is known as stochastic-alpha-beta-rho (SABR) model~\citep{hagan2002sabr}.
+
+\bibliography{SV_Z}
+%\bibliography{../../@Bib/SV_Z}
+
+\end{document}
